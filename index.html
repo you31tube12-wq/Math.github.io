@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ស្ទូឌីយោរូបមន្ត - I'mRa Edition</title>
+    
+    <script defer src="https://unpkg.com/mathlive"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: #0f172a;
+            --neon: #38bdf8;
+            --neon-pink: #d946ef;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- ផ្ទាំងពាណិជ្ជកម្ម Popup Telegram --- */
+        .ad-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.4s;
+        }
+        .ad-overlay.show { visibility: visible; opacity: 1; }
+        
+        .ad-content {
+            width: 85%;
+            max-width: 350px;
+            background: #1e293b;
+            border-radius: 25px;
+            padding: 35px 20px 25px;
+            position: relative;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            text-align: center;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ប៊ូតុងខ្វែង (X) */
+        .btn-close-x {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-close-x:hover { background: var(--neon-pink); color: white; }
+
+        .ad-content h3 {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            padding: 0 10px;
+        }
+
+        /* ប៊ូតុង Telegram ជាមួយចលនាញ័រ */
+        .btn-tg {
+            display: inline-block;
+            width: 100%;
+            background: #0088cc;
+            color: white;
+            text-decoration: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-top: 5px;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            animation: shake 2s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-2deg); }
+            20%, 40%, 60%, 80% { transform: rotate(2deg); }
+        }
+
+        /* ----------------------- */
+
+        .main-container {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .neon-box {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            background: var(--card);
+            padding: 2px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .neon-box::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, transparent, var(--neon), var(--neon-pink));
+            animation: rotate 5s linear infinite;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        .inner-editor {
+            position: relative;
+            background: var(--card);
+            border-radius: 13px;
+            z-index: 1;
+            overflow-x: auto;
+        }
+        math-field { min-width: 1000px; font-size: 28px; padding: 15px; color: white; background: transparent; outline: none; }
+
+        .button-bar { display: flex; gap: 10px; width: 100%; max-width: 800px; margin-bottom: 15px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-family: inherit; font-weight: bold; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-copy { background: linear-gradient(90deg, #0ea5e9, #6366f1); }
+        .btn-kb { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+
+        .code-display { width: 100%; max-width: 800px; background: rgba(0, 0, 0, 0.3); padding: 12px; border-radius: 10px; color: #2dd4bf; border-left: 3px solid var(--neon-pink); }
+
+        .footer-credit {
+            margin-top: auto;
+            padding: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            background: linear-gradient(to right, #38bdf8, #d946ef);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ad-overlay" id="adOverlay">
+        <div class="ad-content">
+            <div class="btn-close-x" onclick="closeAd()">✕</div>
+            
+            <h3>កុំភ្លេចចូលរួមជាមួយពួកខ្ញុំដើម្បីតាមដាន និងទទួលបានព័ត៌មានថ្មីៗ</h3>
+            
+            <a href="https://t.me/I_AM_RA2" target="_blank" class="btn-tg" onclick="closeAd()">
+                ចូលរួមតាម Telegram 🔵
+            </a>
+            
+            <p style="margin-top: 20px; font-size: 11px; color: #64748b;">ចុចលើ (X) ដើម្បីបិទផ្ទាំងនេះ</p>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <h4 style="margin: 5px 0 10px 0; color: var(--neon); letter-spacing: 2px;">EQUATION STUDIO</h4>
+
+        <div class="neon-box">
+            <div class="inner-editor">
+                <math-field id="formula-input">x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}</math-field>
+            </div>
+        </div>
+
+        <div class="button-bar">
+            <button class="btn btn-copy" onclick="copyLatex()">📋 ចម្លងកូដ</button>
+            <button class="btn btn-kb" onclick="toggleKB()">⌨️ ក្តារចុច</button>
+        </div>
+
+        <div class="code-display"><code id="output-text"></code></div>
+
+        <div class="footer-credit">© 2026 Developed by I'mRa</div>
+    </div>
+
+    <div id="keyboard-anchor"></div>
+
+<script>
+    const mf = document.getElementById('formula-input');
+    const out = document.getElementById('output-text');
+
+    window.addEventListener('DOMContentLoaded', () => {
+        mf.mathVirtualKeyboardPolicy = "manual";
+        
+        // បើក Popup ក្រោយ ០.៨ វិនាទី
+        setTimeout(() => {
+            document.getElementById('adOverlay').classList.add('show');
+        }, 800);
+
+        mf.addEventListener('input', () => { out.innerText = mf.value; });
+        out.innerText = mf.value;
+    });
+
+    function closeAd() { document.getElementById('adOverlay').classList.remove('show'); }
+    function toggleKB() { 
+        const kb = window.mathVirtualKeyboard;
+        kb.visible = !kb.visible;
+        if(kb.visible) mf.focus();
+    }
+
+    function copyLatex() {
+        navigator.clipboard.writeText(mf.value);
+        alert("បានចម្លងកូដ LaTeX!");
+    }
+</script>
+
+</body>
+                                                           </html>
+                                                           
